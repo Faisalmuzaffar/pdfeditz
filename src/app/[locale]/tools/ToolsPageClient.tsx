@@ -34,6 +34,17 @@ export default function ToolsPageClient({ locale, localizedToolContent }: ToolsP
     'optimize-repair': 'optimizeRepair',
     'secure-pdf': 'securePdf',
   };
+  const categoryOrder: ToolCategory[] = [
+    'edit-annotate',
+    'convert-to-pdf',
+    'convert-from-pdf',
+    'organize-manage',
+    'optimize-repair',
+    'secure-pdf',
+  ];
+  const visibleCategories = categoryOrder.filter((category) =>
+    allTools.some((tool) => tool.category === category)
+  );
 
   // Read initial values from URL search params (client-side)
   const initialCategory = searchParams.get('category') || 'all';
@@ -53,13 +64,22 @@ export default function ToolsPageClient({ locale, localizedToolContent }: ToolsP
   }, [searchParams]);
   const [showFilters, setShowFilters] = useState(false);
 
+  useEffect(() => {
+    if (selectedCategory !== 'all' && !visibleCategories.includes(selectedCategory)) {
+      setSelectedCategory('all');
+    }
+  }, [selectedCategory, visibleCategories]);
+
+  const isValidCategory = selectedCategory !== 'all' && visibleCategories.includes(selectedCategory);
+  const activeCategory = isValidCategory ? selectedCategory : 'all';
+
   // Filter tools based on search and category
   const filteredTools = useMemo(() => {
     let tools = allTools;
 
     // Filter by category
-    if (selectedCategory !== 'all') {
-      tools = getToolsByCategory(selectedCategory);
+    if (activeCategory !== 'all') {
+      tools = getToolsByCategory(activeCategory);
     }
 
     // Filter by search query (supports current language search)
@@ -70,17 +90,15 @@ export default function ToolsPageClient({ locale, localizedToolContent }: ToolsP
     }
 
     return tools;
-  }, [allTools, selectedCategory, searchQuery]);
+  }, [allTools, activeCategory, searchQuery]);
 
   // Category options
   const categories: { value: CategoryFilter; label: string }[] = [
     { value: 'all', label: t('toolsPage.allTools') },
-    { value: 'edit-annotate', label: t('home.categories.editAnnotate') },
-    { value: 'convert-to-pdf', label: t('home.categories.convertToPdf') },
-    { value: 'convert-from-pdf', label: t('home.categories.convertFromPdf') },
-    { value: 'organize-manage', label: t('home.categories.organizeManage') },
-    { value: 'optimize-repair', label: t('home.categories.optimizeRepair') },
-    { value: 'secure-pdf', label: t('home.categories.securePdf') },
+    ...visibleCategories.map((category) => ({
+      value: category,
+      label: t(`home.categories.${categoryTranslationKeys[category]}`),
+    })),
   ];
 
   const handleClearSearch = useCallback(() => {
@@ -207,7 +225,7 @@ export default function ToolsPageClient({ locale, localizedToolContent }: ToolsP
                   ? t('toolsPage.showingAll', { count: allTools.length })
                   : t('toolsPage.showingFiltered', { filtered: filteredTools.length, total: allTools.length })}
                 {searchQuery && ` ${t('toolsPage.forQuery', { query: searchQuery })}`}
-                {selectedCategory !== 'all' && ` ${t('toolsPage.inCategory', { category: t(`home.categories.${categoryTranslationKeys[selectedCategory]}`) })}`}
+                {activeCategory !== 'all' && ` ${t('toolsPage.inCategory', { category: t(`home.categories.${categoryTranslationKeys[activeCategory]}`) })}`}
               </p>
             </div>
 
