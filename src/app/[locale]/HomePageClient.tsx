@@ -80,6 +80,10 @@ export default function HomePageClient({ locale, localizedToolContent }: HomePag
     'optimize-repair',
     'secure-pdf',
   ];
+  const visibleCategories = categoryOrder.filter((category) =>
+    allTools.some((tool) => tool.category === category)
+  );
+  const featuredCategory: ToolCategory = 'edit-annotate';
 
   return (
     <div className="min-h-screen flex flex-col bg-[hsl(var(--color-background))]">
@@ -190,10 +194,10 @@ export default function HomePageClient({ locale, localizedToolContent }: HomePag
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div className="max-w-2xl">
                 <h2 id="featured-tools-heading" className="text-2xl font-bold text-[hsl(var(--color-foreground))] mb-2">
-                  {t(`home.categories.${categoryTranslationKeys['organize-manage']}`)}
+                  {t(`home.categories.${categoryTranslationKeys[featuredCategory]}`)}
                 </h2>
                 <p className="text-[hsl(var(--color-muted-foreground))] text-base">
-                  {t(`home.categoriesDescription.${categoryTranslationKeys['organize-manage']}`)}
+                  {t(`home.categoriesDescription.${categoryTranslationKeys[featuredCategory]}`)}
                 </p>
               </div>
               <Link href={`/${locale}/tools`}>
@@ -204,7 +208,7 @@ export default function HomePageClient({ locale, localizedToolContent }: HomePag
               </Link>
             </div>
             <ToolGrid
-              tools={getToolsByCategory('organize-manage').slice(0, 8)}
+              tools={getToolsByCategory(featuredCategory).slice(0, 8)}
               locale={locale}
               localizedToolContent={localizedToolContent}
             />
@@ -224,7 +228,7 @@ export default function HomePageClient({ locale, localizedToolContent }: HomePag
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {categoryOrder.map((category) => {
+              {visibleCategories.map((category) => {
                 const categoryTools = getToolsByCategory(category);
                 const Icon = categoryIcons[category];
                 const categoryName = t(`home.categories.${categoryTranslationKeys[category]}`);
